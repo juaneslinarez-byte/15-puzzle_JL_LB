@@ -13,9 +13,13 @@ import '../widgets/puzzle_board.dart';
 /// cronómetro. Usamos setState porque ese estado solo le importa a esta
 /// pantalla; las reglas están en [GameSession] y aquí solo se dibujan.
 class GameScreen extends StatefulWidget {
-  const GameScreen({super.key, required this.difficulty});
+  const GameScreen({super.key, required this.difficulty, this.initialSession});
 
   final Difficulty difficulty;
+
+  /// Solo para pruebas: permite empezar desde un tablero conocido.
+  @visibleForTesting
+  final GameSession? initialSession;
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -53,7 +57,10 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     _stopwatch
       ..stop()
       ..reset();
-    _session = GameSession(widget.difficulty);
+    final initial = widget.initialSession;
+    _session = initial != null && initial.status == GameStatus.ready
+        ? initial
+        : GameSession(widget.difficulty);
     // El Stopwatch mide el tiempo real; el Timer solo refresca la pantalla.
     _ticker = Timer.periodic(const Duration(milliseconds: 200), (_) => _tick());
   }
@@ -175,6 +182,13 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                         ),
                       ),
                       if (status == GameStatus.paused) _PausedOverlay(onResume: _resume),
+                      if (_session.isOver)
+                        _GameOverPanel(
+                          session: _session,
+                          onRestart: () => setState(_newGame),
+                          // El menú todavía no existe: el botón solo aparece si hay a dónde volver.
+                          onMenu: Navigator.of(context).canPop() ? () => Navigator.of(context).pop() : null,
+                        ),
                     ],
                   ),
                 ),
@@ -197,8 +211,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                           const SizedBox(height: 8),
                           Text(switch (status) {
                             GameStatus.ready => 'Toca una pieza junto al hueco para empezar',
-                            GameStatus.won => '¡Ganaste!',
-                            GameStatus.lost => 'Se acabó el tiempo',
+                            GameStatus.won || GameStatus.lost => 'Partida terminada',
                             GameStatus.paused => 'En pausa',
                             _ =>
                               '${_session.puzzle.correctTiles} de ${widget.difficulty.pieces} piezas en su lugar',
@@ -240,6 +253,94 @@ class _PausedOverlay extends StatelessWidget {
   }
 }
 
+/// Resultado de la partida, superpuesto al tablero.
+class _GameOverPanel extends StatelessWidget {
+  const _GameOverPanel({required this.session, required this.onRestart, this.onMenu});
+
+  final GameSession session;
+  final VoidCallback onRestart;
+  final VoidCallback? onMenu;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final won = session.status == GameStatus.won;
+    final color = won ? scheme.primary : scheme.error;
+
+    return ColoredBox(
+      color: scheme.surface.withValues(alpha: 0.55),
+      child: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(12),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 360),
+            child: Card(
+              elevation: 8,
+              color: scheme.surfaceContainerHigh,
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(won ? Icons.emoji_events : Icons.hourglass_empty, size: 48, color: color),
+                    const SizedBox(height: 8),
+                    Text(
+                      won ? '¡Ganaste!' : 'Perdiste',
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(fontWeight: FontWeight.w900, color: color),
+                    ),
+                    if (!won) ...[const SizedBox(height: 4), const Text('Se acabó el tiempo')],
+                    const SizedBox(height: 16),
+                    _SummaryRow('Tiempo', formatDuration(session.elapsed)),
+                    _SummaryRow('Movimientos', '${session.moves}'),
+                    _SummaryRow(
+                      'Dificultad',
+                      '${session.difficulty.label} · ${session.difficulty.gridLabel}',
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        if (onMenu != null) ...[
+                          Expanded(
+                            child: OutlinedButton(onPressed: onMenu, child: const Text('Menú')),
+                          ),
+                          const SizedBox(width: 12),
+                        ],
+                        Expanded(
+                          child: FilledButton(onPressed: onRestart, child: const Text('Reiniciar')),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SummaryRow extends StatelessWidget {
+  const _SummaryRow(this.label, this.value);
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Row(
+      children: [
+        Text(label, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+        const Spacer(),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.w700)),
+      ],
+    ),
+  );
+}
+
 class _StatsPanel extends StatelessWidget {
   const _StatsPanel({required this.session, required this.vertical});
 
@@ -256,7 +357,8 @@ class _StatsPanel extends StatelessWidget {
       _Stat(
         icon: Icons.hourglass_bottom,
         label: 'Restante',
-        value: formatDuration(session.remaining),
+        // La cuenta regresiva redondea hacia arriba: con 1:59.6 restantes se ve 2:00.
+        value: formatDuration(Duration(seconds: (session.remaining.inMilliseconds / 1000).ceil())),
         color: low ? scheme.error : null,
       ),
     ];

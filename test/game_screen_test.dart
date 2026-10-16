@@ -1,0 +1,44 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:puzzle15/logic/difficulty.dart';
+import 'package:puzzle15/logic/game_session.dart';
+import 'package:puzzle15/logic/puzzle.dart';
+import 'package:puzzle15/screens/game_screen.dart';
+
+void main() {
+  Future<void> pumpAlmostSolved(WidgetTester tester) async {
+    tester.view.physicalSize = const Size(800, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final session = GameSession.withPuzzle(Difficulty.easy, Puzzle.fromTiles(3, [1, 2, 3, 4, 5, 6, 7, 0, 8]));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: GameScreen(difficulty: Difficulty.easy, initialSession: session),
+      ),
+    );
+  }
+
+  testWidgets('al ordenar la última pieza se muestra la pantalla de victoria', (tester) async {
+    await pumpAlmostSolved(tester);
+    expect(find.text('¡Ganaste!'), findsNothing);
+
+    await tester.tap(find.text('8'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('¡Ganaste!'), findsOneWidget);
+    expect(find.text('Movimientos'), findsWidgets);
+    expect(find.text('Fácil · 3x3'), findsWidgets);
+  });
+
+  testWidgets('Reiniciar cierra el resultado y empieza un tablero nuevo', (tester) async {
+    await pumpAlmostSolved(tester);
+    await tester.tap(find.text('8'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Reiniciar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('¡Ganaste!'), findsNothing);
+    expect(find.text('Toca una pieza junto al hueco para empezar'), findsOneWidget);
+  });
+}
