@@ -5,6 +5,7 @@ import '../logic/difficulty.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/menu_button.dart';
 import 'game_screen.dart';
+import 'instructions_screen.dart';
 
 /// Menú principal. Es un StatefulWidget solo para recordar la última
 /// dificultad elegida mientras la app está abierta.
@@ -98,7 +99,9 @@ class _MenuScreenState extends State<MenuScreen> {
                       child: MenuButton(
                         icon: Icons.help_outline,
                         label: 'Cómo jugar',
-                        onPressed: () => _comingSoon('Cómo jugar'),
+                        onPressed: () =>
+                            Navigator.of(context)
+                                .push(MaterialPageRoute(builder: (_) => const InstructionsScreen())),
                       ),
                     ),
                   ],
