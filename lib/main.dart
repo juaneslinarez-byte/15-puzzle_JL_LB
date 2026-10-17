@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'logic/difficulty.dart';
-import 'screens/game_screen.dart';
+import 'screens/menu_screen.dart';
 
 void main() => runApp(const PuzzleApp());
 
@@ -17,8 +16,7 @@ class PuzzleApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1F6F5C)),
         useMaterial3: true,
       ),
-      // Mientras no exista el menú, la app abre directo en una partida.
-      home: const GameScreen(difficulty: Difficulty.medium),
+      home: const MenuScreen(),
     );
   }
 }
