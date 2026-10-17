@@ -1,3 +1,4 @@
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 
 import '../logic/difficulty.dart';
@@ -46,7 +47,7 @@ class _MenuScreenState extends State<MenuScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Center(child: AppLogo(size: 84)),
+                    FadeInDown(child: const Center(child: AppLogo(size: 84))),
                     const SizedBox(height: 16),
                     Text(
                       '15-Puzzle',
@@ -60,29 +61,45 @@ class _MenuScreenState extends State<MenuScreen> {
                       style: text.bodyLarge?.copyWith(color: scheme.onSurfaceVariant),
                     ),
                     const SizedBox(height: 32),
-                    MenuButton(
-                      icon: Icons.play_arrow_rounded,
-                      label: 'Jugar',
-                      primary: true,
-                      onPressed: _play,
+                    FadeInUp(
+                      delay: const Duration(milliseconds: 0),
+                      duration: const Duration(milliseconds: 450),
+                      child: MenuButton(
+                        icon: Icons.play_arrow_rounded,
+                        label: 'Jugar',
+                        primary: true,
+                        onPressed: _play,
+                      ),
                     ),
                     const SizedBox(height: 14),
-                    MenuButton(
-                      icon: Icons.emoji_events_outlined,
-                      label: 'Marcadores',
-                      onPressed: () => _comingSoon('Marcadores'),
+                    FadeInUp(
+                      delay: const Duration(milliseconds: 120),
+                      duration: const Duration(milliseconds: 450),
+                      child: MenuButton(
+                        icon: Icons.emoji_events_outlined,
+                        label: 'Marcadores',
+                        onPressed: () => _comingSoon('Marcadores'),
+                      ),
                     ),
                     const SizedBox(height: 14),
-                    MenuButton(
-                      icon: Icons.tune,
-                      label: 'Configuración',
-                      onPressed: () => _comingSoon('Configuración'),
+                    FadeInUp(
+                      delay: const Duration(milliseconds: 240),
+                      duration: const Duration(milliseconds: 450),
+                      child: MenuButton(
+                        icon: Icons.tune,
+                        label: 'Configuración',
+                        onPressed: () => _comingSoon('Configuración'),
+                      ),
                     ),
                     const SizedBox(height: 14),
-                    MenuButton(
-                      icon: Icons.help_outline,
-                      label: 'Cómo jugar',
-                      onPressed: () => _comingSoon('Cómo jugar'),
+                    FadeInUp(
+                      delay: const Duration(milliseconds: 360),
+                      duration: const Duration(milliseconds: 450),
+                      child: MenuButton(
+                        icon: Icons.help_outline,
+                        label: 'Cómo jugar',
+                        onPressed: () => _comingSoon('Cómo jugar'),
+                      ),
                     ),
                   ],
                 ),

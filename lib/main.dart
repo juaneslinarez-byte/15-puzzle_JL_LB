@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'screens/menu_screen.dart';
+import 'screens/splash_screen.dart';
 
 void main() => runApp(const PuzzleApp());
 
@@ -16,7 +16,7 @@ class PuzzleApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1F6F5C)),
         useMaterial3: true,
       ),
-      home: const MenuScreen(),
+      home: const SplashScreen(),
     );
   }
 }
