@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:puzzle15/logic/difficulty.dart';
 import 'package:puzzle15/logic/game_session.dart';
@@ -39,6 +40,27 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('¡Ganaste!'), findsNothing);
+    expect(find.text('Toca una pieza junto al hueco para empezar'), findsOneWidget);
+  });
+
+  testWidgets('la flecha izquierda mueve la pieza que está a la derecha del hueco', (tester) async {
+    await pumpAlmostSolved(tester);
+    await tester.pump();
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+    await tester.pumpAndSettle();
+
+    expect(find.text('¡Ganaste!'), findsOneWidget);
+  });
+
+  testWidgets('una flecha sin pieza que mover no cuenta como movimiento', (tester) async {
+    await pumpAlmostSolved(tester);
+    await tester.pump();
+
+    // El hueco está en la fila de abajo: no hay pieza debajo para subir.
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
+    await tester.pump();
+
     expect(find.text('Toca una pieza junto al hueco para empezar'), findsOneWidget);
   });
 }

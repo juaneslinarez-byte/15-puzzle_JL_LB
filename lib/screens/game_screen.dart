@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../logic/difficulty.dart';
 import '../logic/format.dart';
 import '../logic/game_session.dart';
+import '../logic/puzzle.dart';
 import '../widgets/puzzle_board.dart';
 
 /// Pantalla del tablero.
@@ -29,6 +31,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   late GameSession _session;
   final Stopwatch _stopwatch = Stopwatch();
   Timer? _ticker;
+  final FocusNode _focus = FocusNode();
 
   @override
   void initState() {
@@ -41,6 +44,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _ticker?.cancel();
+    _focus.dispose();
     super.dispose();
   }
 
@@ -98,6 +102,24 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     _session.resume();
     _stopwatch.start();
     setState(() {});
+    _focus.requestFocus();
+  }
+
+  /// En computadora, las flechas mueven la pieza que está al lado del hueco
+  /// en la dirección contraria: la flecha arriba sube la pieza de abajo.
+  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
+    final direction = switch (event.logicalKey) {
+      LogicalKeyboardKey.arrowUp => SlideDirection.up,
+      LogicalKeyboardKey.arrowDown => SlideDirection.down,
+      LogicalKeyboardKey.arrowLeft => SlideDirection.left,
+      LogicalKeyboardKey.arrowRight => SlideDirection.right,
+      _ => null,
+    };
+    if (direction == null) return KeyEventResult.ignored;
+    final index = _session.puzzle.tileForDirection(direction);
+    if (index != null) _onTileTap(index);
+    return KeyEventResult.handled;
   }
 
   bool get _inProgress => _session.status == GameStatus.playing || _session.status == GameStatus.paused;
@@ -130,6 +152,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       return;
     }
     setState(_newGame);
+    _focus.requestFocus();
   }
 
   @override
@@ -157,69 +180,78 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
             IconButton(tooltip: 'Nuevo tablero', onPressed: _restart, icon: const Icon(Icons.refresh)),
           ],
         ),
-        body: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              // En pantallas anchas (escritorio, tablet horizontal) los datos
-              // van a la izquierda del tablero; en el teléfono, arriba.
-              final wide = constraints.maxWidth > constraints.maxHeight * 1.15 && constraints.maxWidth > 700;
-              final stats = _StatsPanel(session: _session, vertical: wide);
-              final board = ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 560, maxHeight: 560),
-                child: AspectRatio(
-                  aspectRatio: 1,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      // En pausa se oculta el tablero para que no se pueda planear sin reloj.
-                      AnimatedOpacity(
-                        opacity: status == GameStatus.paused ? 0 : 1,
-                        duration: const Duration(milliseconds: 150),
-                        child: PuzzleBoard(
-                          puzzle: _session.puzzle,
-                          enabled: _session.acceptsMoves,
-                          onTileTap: _onTileTap,
+        body: Focus(
+          focusNode: _focus,
+          autofocus: true,
+          onKeyEvent: _onKey,
+          child: SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // En pantallas anchas (escritorio, tablet horizontal) los datos
+                // van a la izquierda del tablero; en el teléfono, arriba.
+                final wide =
+                    constraints.maxWidth > constraints.maxHeight * 1.15 && constraints.maxWidth > 700;
+                final stats = _StatsPanel(session: _session, vertical: wide);
+                final board = ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 560, maxHeight: 560),
+                  child: AspectRatio(
+                    aspectRatio: 1,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        // En pausa se oculta el tablero para que no se pueda planear sin reloj.
+                        AnimatedOpacity(
+                          opacity: status == GameStatus.paused ? 0 : 1,
+                          duration: const Duration(milliseconds: 150),
+                          child: PuzzleBoard(
+                            puzzle: _session.puzzle,
+                            enabled: _session.acceptsMoves,
+                            onTileTap: _onTileTap,
+                          ),
                         ),
-                      ),
-                      if (status == GameStatus.paused) _PausedOverlay(onResume: _resume),
-                      if (_session.isOver)
-                        _GameOverPanel(
-                          session: _session,
-                          onRestart: () => setState(_newGame),
-                          // El menú todavía no existe: el botón solo aparece si hay a dónde volver.
-                          onMenu: Navigator.of(context).canPop() ? () => Navigator.of(context).pop() : null,
-                        ),
-                    ],
+                        if (status == GameStatus.paused) _PausedOverlay(onResume: _resume),
+                        if (_session.isOver)
+                          _GameOverPanel(
+                            session: _session,
+                            onRestart: () {
+                              setState(_newGame);
+                              _focus.requestFocus();
+                            },
+                            // El menú todavía no existe: el botón solo aparece si hay a dónde volver.
+                            onMenu: Navigator.of(context).canPop() ? () => Navigator.of(context).pop() : null,
+                          ),
+                      ],
+                    ),
                   ),
-                ),
-              );
-              return Padding(
-                padding: const EdgeInsets.all(16),
-                child: wide
-                    ? Row(
-                        children: [
-                          SizedBox(width: 240, child: stats),
-                          const SizedBox(width: 24),
-                          Expanded(child: Center(child: board)),
-                        ],
-                      )
-                    : Column(
-                        children: [
-                          stats,
-                          const SizedBox(height: 16),
-                          Expanded(child: Center(child: board)),
-                          const SizedBox(height: 8),
-                          Text(switch (status) {
-                            GameStatus.ready => 'Toca una pieza junto al hueco para empezar',
-                            GameStatus.won || GameStatus.lost => 'Partida terminada',
-                            GameStatus.paused => 'En pausa',
-                            _ =>
-                              '${_session.puzzle.correctTiles} de ${widget.difficulty.pieces} piezas en su lugar',
-                          }, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
-                        ],
-                      ),
-              );
-            },
+                );
+                return Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: wide
+                      ? Row(
+                          children: [
+                            SizedBox(width: 240, child: stats),
+                            const SizedBox(width: 24),
+                            Expanded(child: Center(child: board)),
+                          ],
+                        )
+                      : Column(
+                          children: [
+                            stats,
+                            const SizedBox(height: 16),
+                            Expanded(child: Center(child: board)),
+                            const SizedBox(height: 8),
+                            Text(switch (status) {
+                              GameStatus.ready => 'Toca una pieza junto al hueco para empezar',
+                              GameStatus.won || GameStatus.lost => 'Partida terminada',
+                              GameStatus.paused => 'En pausa',
+                              _ =>
+                                '${_session.puzzle.correctTiles} de ${widget.difficulty.pieces} piezas en su lugar',
+                            }, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                          ],
+                        ),
+                );
+              },
+            ),
           ),
         ),
       ),
