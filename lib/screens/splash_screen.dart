@@ -4,6 +4,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/app_logo.dart';
+import '../widgets/maybe_animate.dart';
 import 'menu_screen.dart';
 
 /// Pantalla de carga: logo animado y paso automático al menú.
@@ -56,18 +57,21 @@ class _SplashScreenState extends State<SplashScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  ZoomIn(duration: const Duration(milliseconds: 700), child: const AppLogo(size: 120)),
+                  MaybeAnimate(
+                    builder: (child) => ZoomIn(duration: const Duration(milliseconds: 700), child: child),
+                    child: const AppLogo(size: 120),
+                  ),
                   const SizedBox(height: 28),
-                  FadeInUp(
-                    delay: const Duration(milliseconds: 350),
+                  MaybeAnimate(
+                    builder: (child) => FadeInUp(delay: const Duration(milliseconds: 350), child: child),
                     child: Text(
                       '15-Puzzle Flutter',
                       style: text.headlineMedium?.copyWith(fontWeight: FontWeight.w800),
                     ),
                   ),
                   const SizedBox(height: 8),
-                  FadeIn(
-                    delay: const Duration(milliseconds: 700),
+                  MaybeAnimate(
+                    builder: (child) => FadeIn(delay: const Duration(milliseconds: 700), child: child),
                     child: Text(
                       'Ordena. Desliza. Gana.',
                       style: text.titleMedium?.copyWith(
