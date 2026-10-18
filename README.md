@@ -16,7 +16,7 @@ El jugador ordena las piezas deslizándolas hacia el espacio vacío antes de que
 | Fin de partida | Victoria o derrota con tiempo, movimientos y dificultad; reiniciar o volver al menú. | Disponible |
 | Inicio | Pantalla de carga animada con opción de saltarla. | Disponible |
 | Menú principal | Botones animados; la primera vez Jugar pide la dificultad y después usa la guardada. | Disponible |
-| Marcadores | Mejor tiempo y menor número de movimientos por dificultad, con fecha. | En desarrollo |
+| Marcadores | Mejor tiempo y menor número de movimientos por dificultad, con fecha; mensaje si aún no hay récords, borrado con confirmación y botón para volver al menú. Al ganar se avisa si hubo nuevo récord. | Disponible |
 | Configuración | Dificultad, tema claro / oscuro / automático, estilo de piezas (clásico, colorido, retro, minimalista), animaciones y sonido. Los cambios se aplican al instante y se guardan. | Disponible |
 | Cómo jugar | Reglas, cómo mover, cómo se gana y cómo se pierde (tiempos por dificultad). | Disponible |
 
@@ -50,13 +50,13 @@ Si el barajado sale sin solución, se intercambian dos piezas, lo que cambia la 
 
 ```
 lib/
-├── data/       Acceso a shared_preferences (lo que se guarda en el dispositivo)
+├── data/       Acceso a shared_preferences: preferencias (AppStorage) y récords (ScoreStorage)
 ├── logic/      Reglas del juego sin interfaz: tablero, partida, dificultad y récords
 ├── screens/    Pantallas de la app
 ├── state/      Preferencias del usuario (SettingsController) y cómo llegan a las pantallas
 ├── theme/      Tema claro / oscuro y estilos de las piezas
 └── widgets/    Componentes reutilizables (tablero, piezas, botones del menú y logo)
-test/           Pruebas de la lógica, de la pantalla de juego y de las preferencias
+test/           Pruebas de la lógica, de las pantallas de juego y marcadores, y de las preferencias
 tool/           Scripts de la PWA (service worker y verificación)
 web/            index.html, manifiesto, íconos y service worker
 .github/        Workflow de GitHub Actions (pruebas y despliegue)
