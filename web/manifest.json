@@ -1,35 +1,20 @@
 {
-    "name": "puzzle15",
-    "short_name": "puzzle15",
+    "name": "15-Puzzle Flutter",
+    "short_name": "15-Puzzle",
+    "description": "Rompecabezas deslizante: ordena las piezas antes de que se acabe el tiempo.",
+    "lang": "es",
     "start_url": ".",
+    "scope": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#F5FBF7",
+    "theme_color": "#1F6F5C",
+    "orientation": "any",
+    "categories": ["games", "puzzle"],
     "prefer_related_applications": false,
     "icons": [
-        {
-            "src": "icons/Icon-192.png",
-            "sizes": "192x192",
-            "type": "image/png"
-        },
-        {
-            "src": "icons/Icon-512.png",
-            "sizes": "512x512",
-            "type": "image/png"
-        },
-        {
-            "src": "icons/Icon-maskable-192.png",
-            "sizes": "192x192",
-            "type": "image/png",
-            "purpose": "maskable"
-        },
-        {
-            "src": "icons/Icon-maskable-512.png",
-            "sizes": "512x512",
-            "type": "image/png",
-            "purpose": "maskable"
-        }
+        { "src": "icons/Icon-192.png", "sizes": "192x192", "type": "image/png" },
+        { "src": "icons/Icon-512.png", "sizes": "512x512", "type": "image/png" },
+        { "src": "icons/Icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+        { "src": "icons/Icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
     ]
 }
