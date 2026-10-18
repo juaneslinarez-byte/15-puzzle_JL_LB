@@ -100,6 +100,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _finish() async {
+    // La partida terminó: se detiene el reloj para que no siga contando.
+    _stopwatch.stop();
+    _ticker?.cancel();
     if (_session.status == GameStatus.won) {
       final previous = await _scoreStorage.read(widget.difficulty);
       final result = mergeScore(
