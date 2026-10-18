@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+// Sonido de clic, vibración y teclas de flecha (parte del SDK de Flutter, no un paquete externo).
 import 'package:flutter/services.dart';
 
 import '../data/score_storage.dart';
@@ -396,7 +397,7 @@ class _GameOverPanel extends StatelessWidget {
                       children: [
                         if (onMenu != null) ...[
                           Expanded(
-                            child: OutlinedButton(onPressed: onMenu, child: const Text('Menú')),
+                            child: OutlinedButton(onPressed: onMenu, child: const Text('Salir al menú')),
                           ),
                           const SizedBox(width: 12),
                         ],
