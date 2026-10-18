@@ -9,6 +9,7 @@ import '../logic/format.dart';
 import '../logic/game_session.dart';
 import '../logic/high_score.dart';
 import '../logic/puzzle.dart';
+import '../state/app_scope.dart';
 import '../widgets/puzzle_board.dart';
 
 /// Pantalla del tablero.
@@ -84,9 +85,16 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     final wasReady = _session.status == GameStatus.ready;
     if (!_session.tapTile(index)) return;
     if (wasReady) _stopwatch.start();
+    // Efecto de sonido y vibración opcionales (Configuración → Efectos de sonido).
+    final sound = AppScope.of(context).settings.sound;
+    if (sound) {
+      SystemSound.play(SystemSoundType.click);
+      HapticFeedback.selectionClick();
+    }
     setState(() {});
     if (_session.status == GameStatus.won) {
       _session.elapsed = _stopwatch.elapsed;
+      if (sound) HapticFeedback.mediumImpact();
       _finish();
     }
   }
@@ -174,6 +182,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    final settings = AppScope.of(context).settings;
     final status = _session.status;
     return PopScope(
       canPop: !_inProgress,
@@ -222,6 +231,8 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                           duration: const Duration(milliseconds: 150),
                           child: PuzzleBoard(
                             puzzle: _session.puzzle,
+                            style: settings.tileStyle,
+                            animate: settings.animations,
                             enabled: _session.acceptsMoves,
                             onTileTap: _onTileTap,
                           ),
