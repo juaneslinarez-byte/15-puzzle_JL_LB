@@ -1,11 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+// Sonido de clic, vibración y teclas de flecha (parte del SDK de Flutter, no un paquete externo).
 import 'package:flutter/services.dart';
 
+import '../data/score_storage.dart';
 import '../logic/difficulty.dart';
 import '../logic/format.dart';
 import '../logic/game_session.dart';
+import '../logic/high_score.dart';
 import '../logic/puzzle.dart';
 import '../state/app_scope.dart';
 import '../widgets/puzzle_board.dart';
@@ -33,6 +36,8 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   final Stopwatch _stopwatch = Stopwatch();
   Timer? _ticker;
   final FocusNode _focus = FocusNode();
+  final ScoreStorage _scoreStorage = ScoreStorage();
+  RecordResult? _record;
 
   @override
   void initState() {
@@ -58,6 +63,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   }
 
   void _newGame() {
+    _record = null;
     _ticker?.cancel();
     _stopwatch
       ..stop()
@@ -94,10 +100,25 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     }
   }
 
-  void _finish() {
+  Future<void> _finish() async {
+    // La partida terminó: se detiene el reloj para que no siga contando.
     _stopwatch.stop();
     _ticker?.cancel();
-    setState(() {});
+    if (_session.status == GameStatus.won) {
+      final previous = await _scoreStorage.read(widget.difficulty);
+      final result = mergeScore(
+        previous,
+        _session.elapsed,
+        _session.moves,
+        DateTime.now(),
+      );
+      if (result.isRecord) {
+        await _scoreStorage.write(widget.difficulty, result.score);
+      }
+      if (mounted) {
+        setState(() => _record = result);
+      }
+    }
   }
 
   void _pause() {
@@ -224,6 +245,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                         if (_session.isOver)
                           _GameOverPanel(
                             session: _session,
+                            record: _record,
                             onRestart: () {
                               setState(_newGame);
                               _focus.requestFocus();
@@ -298,9 +320,15 @@ class _PausedOverlay extends StatelessWidget {
 
 /// Resultado de la partida, superpuesto al tablero.
 class _GameOverPanel extends StatelessWidget {
-  const _GameOverPanel({required this.session, required this.onRestart, this.onMenu});
+  const _GameOverPanel({
+    required this.session,
+    this.record,
+    required this.onRestart,
+    this.onMenu,
+  });
 
   final GameSession session;
+  final RecordResult? record;
   final VoidCallback onRestart;
   final VoidCallback? onMenu;
 
@@ -332,6 +360,30 @@ class _GameOverPanel extends StatelessWidget {
                       style: Theme.of(context).textTheme.headlineMedium
                           ?.copyWith(fontWeight: FontWeight.w900, color: color),
                     ),
+                    if (record?.isRecord == true) ...[
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.amber.shade700),
+                        ),
+                        child: Text(
+                          record!.newBestTime && record!.newFewestMoves
+                              ? '¡Nuevo récord de tiempo y movimientos!'
+                              : record!.newBestTime
+                                  ? '¡Nuevo récord de tiempo!'
+                                  : '¡Nuevo récord de movimientos!',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.amber.shade900,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
                     if (!won) ...[const SizedBox(height: 4), const Text('Se acabó el tiempo')],
                     const SizedBox(height: 16),
                     _SummaryRow('Tiempo', formatDuration(session.elapsed)),
@@ -345,7 +397,7 @@ class _GameOverPanel extends StatelessWidget {
                       children: [
                         if (onMenu != null) ...[
                           Expanded(
-                            child: OutlinedButton(onPressed: onMenu, child: const Text('Menú')),
+                            child: OutlinedButton(onPressed: onMenu, child: const Text('Salir al menú')),
                           ),
                           const SizedBox(width: 12),
                         ],
@@ -449,6 +501,7 @@ class _Stat extends StatelessWidget {
   final String value;
   final Color? color;
 
+  
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;

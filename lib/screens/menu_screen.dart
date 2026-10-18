@@ -8,6 +8,7 @@ import '../widgets/maybe_animate.dart';
 import '../widgets/menu_button.dart';
 import 'game_screen.dart';
 import 'instructions_screen.dart';
+import 'scores_screen.dart';
 import 'settings_screen.dart';
 
 /// Menú principal. La dificultad sale de Configuración (SettingsController),
@@ -32,12 +33,6 @@ class _MenuScreenState extends State<MenuScreen> {
       difficulty = chosen;
     }
     await Navigator.of(context).push(MaterialPageRoute(builder: (_) => GameScreen(difficulty: difficulty)));
-  }
-
-  void _comingSoon(String what) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text('$what estará disponible pronto')));
   }
 
   @override
@@ -102,7 +97,9 @@ class _MenuScreenState extends State<MenuScreen> {
                       child: MenuButton(
                         icon: Icons.emoji_events_outlined,
                         label: 'Marcadores',
-                        onPressed: () => _comingSoon('Marcadores'),
+                        onPressed: () =>
+                            Navigator.of(context)
+                                .push(MaterialPageRoute(builder: (_) => const ScoresScreen())),
                       ),
                     ),
                     const SizedBox(height: 14),
