@@ -6,6 +6,7 @@ import '../widgets/app_logo.dart';
 import '../widgets/menu_button.dart';
 import 'game_screen.dart';
 import 'instructions_screen.dart';
+import 'scores_screen.dart';
 
 /// Menú principal. Es un StatefulWidget solo para recordar la última
 /// dificultad elegida mientras la app está abierta.
@@ -23,7 +24,9 @@ class _MenuScreenState extends State<MenuScreen> {
     final chosen = await showDifficultyPicker(context, _difficulty);
     if (chosen == null || !mounted) return;
     setState(() => _difficulty = chosen);
-    await Navigator.of(context).push(MaterialPageRoute(builder: (_) => GameScreen(difficulty: chosen)));
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => GameScreen(difficulty: chosen)),
+    );
   }
 
   void _comingSoon(String what) {
@@ -68,7 +71,6 @@ class _MenuScreenState extends State<MenuScreen> {
                       child: MenuButton(
                         icon: Icons.play_arrow_rounded,
                         label: 'Jugar',
-                        primary: true,
                         onPressed: _play,
                       ),
                     ),
@@ -79,7 +81,9 @@ class _MenuScreenState extends State<MenuScreen> {
                       child: MenuButton(
                         icon: Icons.emoji_events_outlined,
                         label: 'Marcadores',
-                        onPressed: () => _comingSoon('Marcadores'),
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const ScoresScreen()),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 14),
@@ -99,9 +103,11 @@ class _MenuScreenState extends State<MenuScreen> {
                       child: MenuButton(
                         icon: Icons.help_outline,
                         label: 'Cómo jugar',
-                        onPressed: () =>
-                            Navigator.of(context)
-                                .push(MaterialPageRoute(builder: (_) => const InstructionsScreen())),
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const InstructionsScreen(),
+                          ),
+                        ),
                       ),
                     ),
                   ],
