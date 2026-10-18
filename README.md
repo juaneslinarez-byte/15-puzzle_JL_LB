@@ -15,9 +15,9 @@ El jugador ordena las piezas deslizándolas hacia el espacio vacío antes de que
 | Juego | Tablero 3x3, 4x4 o 5x5 siempre resoluble, contador de movimientos, cronómetro y tiempo restante, pausa, reinicio y controles con las flechas del teclado. | Disponible |
 | Fin de partida | Victoria o derrota con tiempo, movimientos y dificultad; reiniciar o volver al menú. | Disponible |
 | Inicio | Pantalla de carga animada con opción de saltarla. | Disponible |
-| Menú principal | Botones animados; Jugar pide la dificultad antes de empezar. | Disponible |
+| Menú principal | Botones animados; la primera vez Jugar pide la dificultad y después usa la guardada. | Disponible |
 | Marcadores | Mejor tiempo y menor número de movimientos por dificultad, con fecha. | En desarrollo |
-| Configuración | Dificultad, tema claro / oscuro / automático, estilo de piezas, animaciones y sonido. | En desarrollo |
+| Configuración | Dificultad, tema claro / oscuro / automático, estilo de piezas (clásico, colorido, retro, minimalista), animaciones y sonido. Los cambios se aplican al instante y se guardan. | Disponible |
 | Cómo jugar | Reglas, cómo mover, cómo se gana y cómo se pierde (tiempos por dificultad). | Disponible |
 
 ### Dificultades
@@ -50,16 +50,21 @@ Si el barajado sale sin solución, se intercambian dos piezas, lo que cambia la 
 
 ```
 lib/
+├── data/       Acceso a shared_preferences (lo que se guarda en el dispositivo)
 ├── logic/      Reglas del juego sin interfaz: tablero, partida, dificultad y récords
 ├── screens/    Pantallas de la app
+├── state/      Preferencias del usuario (SettingsController) y cómo llegan a las pantallas
+├── theme/      Tema claro / oscuro y estilos de las piezas
 └── widgets/    Componentes reutilizables (tablero, piezas, botones del menú y logo)
-test/           Pruebas de la lógica y de la pantalla de juego
+test/           Pruebas de la lógica, de la pantalla de juego y de las preferencias
 tool/           Scripts de la PWA (service worker y verificación)
 web/            index.html, manifiesto, íconos y service worker
 .github/        Workflow de GitHub Actions (pruebas y despliegue)
 ```
 
 La lógica (`lib/logic`) no depende de Flutter: las pantallas solo le avisan los toques y el paso del tiempo y dibujan el resultado.
+
+El estado de cada partida vive en la pantalla de juego y se actualiza con `setState`. Las preferencias están en un `ChangeNotifier` (`SettingsController`) que se comparte con un `InheritedWidget` (`AppScope`); cuando cambian, la app se redibuja con el tema y el estilo nuevos sin reiniciarse.
 
 ## Cómo ejecutar el proyecto
 

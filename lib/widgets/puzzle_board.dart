@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../logic/puzzle.dart';
+import '../theme/tile_style.dart';
 import 'tile_view.dart';
 
 /// Dibuja el tablero y anima el deslizamiento de las piezas.
@@ -11,12 +12,14 @@ class PuzzleBoard extends StatelessWidget {
   const PuzzleBoard({
     super.key,
     required this.puzzle,
-    this.animate = true,
+    required this.style,
+    required this.animate,
     this.onTileTap,
     this.enabled = true,
   });
 
   final Puzzle puzzle;
+  final TileStyle style;
   final bool animate;
   final ValueChanged<int>? onTileTap;
   final bool enabled;
@@ -32,6 +35,7 @@ class PuzzleBoard extends StatelessWidget {
           final n = puzzle.size;
           final gap = side * (n >= 5 ? 0.015 : 0.02);
           final tile = (side - gap * (n + 1)) / n;
+          final pieces = n * n - 1;
 
           return Container(
             decoration: BoxDecoration(
@@ -54,7 +58,9 @@ class PuzzleBoard extends StatelessWidget {
                       height: tile,
                       child: TileView(
                         value: puzzle.tiles[index],
+                        pieces: pieces,
                         size: tile,
+                        style: style,
                         isCorrect: puzzle.tiles[index] == index + 1,
                         canMove: enabled && puzzle.canMove(index),
                         onTap: enabled && onTileTap != null ? () => onTileTap!(index) : null,
