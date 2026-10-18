@@ -76,6 +76,17 @@ class _ScoresScreenState extends State<ScoresScreen> {
             ),
         ],
       ),
+      // El enunciado pide un botón explícito para volver al menú principal.
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          child: FilledButton.icon(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.home_outlined),
+            label: const Text('Volver al menú'),
+          ),
+        ),
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : !hasAnyScore
