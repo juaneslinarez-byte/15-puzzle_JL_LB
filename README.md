@@ -4,19 +4,21 @@ Rompecabezas deslizante (*sliding puzzle*) para web y móvil hecho en Flutter. S
 
 El jugador ordena las piezas deslizándolas hacia el espacio vacío antes de que se acabe el tiempo. Hay tres dificultades, varios estilos visuales y un registro de récords por dificultad que se guarda en el dispositivo.
 
+**Versión web:** https://juaneslinarez-byte.github.io/15-puzzle_JL_LB/ (se publica automáticamente cada vez que se integran cambios en `main`).
+
 > Micro-proyecto de la asignatura **Sistemas de Información** (Sección 1, trimestre 2026-2027-1), Facultad de Ingeniería, UNIMET. Profesor: Franklin J. Sandoval S.
 
 ## Funcionalidades
 
-| Pantalla | Qué ofrece |
-| --- | --- |
-| Inicio | Pantalla de carga animada con opción de saltarla. |
-| Menú principal | Jugar, Marcadores, Configuración y Cómo jugar. |
-| Juego | Tablero 3x3, 4x4 o 5x5 siempre resoluble, contador de movimientos, cronómetro y tiempo restante, pausa y controles por teclado. |
-| Fin de partida | Victoria o derrota con tiempo, movimientos, dificultad y aviso de nuevo récord. |
-| Marcadores | Mejor tiempo y menor número de movimientos por dificultad, con fecha. |
-| Configuración | Dificultad, tema claro / oscuro / automático, estilo de piezas, animaciones y sonido. |
-| Cómo jugar | Reglas, cómo se gana y cómo se pierde. |
+| Pantalla | Qué ofrece | Estado |
+| --- | --- | --- |
+| Juego | Tablero 3x3, 4x4 o 5x5 siempre resoluble, contador de movimientos, cronómetro y tiempo restante, pausa, reinicio y controles con las flechas del teclado. | Disponible |
+| Fin de partida | Victoria o derrota con tiempo, movimientos y dificultad; reiniciar o volver al menú. | Disponible |
+| Inicio | Pantalla de carga animada con opción de saltarla. | Disponible |
+| Menú principal | Botones animados; la primera vez Jugar pide la dificultad y después usa la guardada. | Disponible |
+| Marcadores | Mejor tiempo y menor número de movimientos por dificultad, con fecha; mensaje si aún no hay récords, borrado con confirmación y botón para volver al menú. Al ganar se avisa si hubo nuevo récord. | Disponible |
+| Configuración | Dificultad, tema claro / oscuro / automático, estilo de piezas (clásico, colorido, retro, minimalista), animaciones y sonido. Los cambios se aplican al instante y se guardan. | Disponible |
+| Cómo jugar | Reglas, cómo mover, cómo se gana y cómo se pierde (tiempos por dificultad). | Disponible |
 
 ### Dificultades
 
@@ -48,26 +50,29 @@ Si el barajado sale sin solución, se intercambian dos piezas, lo que cambia la 
 
 ```
 lib/
+├── data/       Acceso a shared_preferences: preferencias (AppStorage) y récords (ScoreStorage)
 ├── logic/      Reglas del juego sin interfaz: tablero, partida, dificultad y récords
-├── data/       Acceso al almacenamiento local
-├── state/      Controladores de preferencias y marcadores
 ├── screens/    Pantallas de la app
-├── widgets/    Componentes reutilizables (tablero, piezas, botones)
-└── theme/      Tema claro/oscuro y estilos de piezas
-test/           Pruebas de la lógica
+├── state/      Preferencias del usuario (SettingsController) y cómo llegan a las pantallas
+├── theme/      Tema claro / oscuro y estilos de las piezas
+└── widgets/    Componentes reutilizables (tablero, piezas, botones del menú y logo)
+test/           Pruebas de la lógica, de las pantallas de juego y marcadores, y de las preferencias
 tool/           Scripts de la PWA (service worker y verificación)
 web/            index.html, manifiesto, íconos y service worker
+.github/        Workflow de GitHub Actions (pruebas y despliegue)
 ```
 
 La lógica (`lib/logic`) no depende de Flutter: las pantallas solo le avisan los toques y el paso del tiempo y dibujan el resultado.
+
+El estado de cada partida vive en la pantalla de juego y se actualiza con `setState`. Las preferencias están en un `ChangeNotifier` (`SettingsController`) que se comparte con un `InheritedWidget` (`AppScope`); cuando cambian, la app se redibuja con el tema y el estilo nuevos sin reiniciarse.
 
 ## Cómo ejecutar el proyecto
 
 Requisitos: Flutter SDK (canal estable) y Google Chrome.
 
 ```bash
-git clone https://github.com/juaneslinarez-byte/15-puzzle.git
-cd 15-puzzle
+git clone https://github.com/juaneslinarez-byte/15-puzzle_JL_LB.git
+cd 15-puzzle_JL_LB
 flutter pub get
 flutter run -d chrome
 ```
@@ -77,6 +82,16 @@ Pruebas:
 ```bash
 flutter test
 ```
+
+## Despliegue
+
+El workflow `.github/workflows/deploy.yml` se ejecuta en cada pull request y en cada integración en `main`:
+
+1. Análisis estático y pruebas.
+2. Compilación de la versión web.
+3. Generación del service worker (`tool/build_pwa.dart`), que guarda la app en caché para usarla sin conexión.
+4. Verificación de que sigue siendo una PWA instalable (`tool/check_pwa.dart`).
+5. Publicación en GitHub Pages (solo desde `main`).
 
 ## Equipo
 
