@@ -5,6 +5,7 @@ import 'data/app_storage.dart';
 import 'screens/splash_screen.dart';
 import 'state/app_scope.dart';
 import 'state/settings_controller.dart';
+import 'theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,14 +23,17 @@ class PuzzleApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppScope(
       settings: settings,
-      child: MaterialApp(
-        title: '15-Puzzle Flutter',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1F6F5C)),
-          useMaterial3: true,
+      // Se reconstruye cuando cambia el tema, así el cambio es inmediato.
+      child: ListenableBuilder(
+        listenable: settings,
+        builder: (context, _) => MaterialApp(
+          title: '15-Puzzle Flutter',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light(),
+          darkTheme: AppTheme.dark(),
+          themeMode: settings.themeMode,
+          home: const SplashScreen(),
         ),
-        home: const SplashScreen(),
       ),
     );
   }
