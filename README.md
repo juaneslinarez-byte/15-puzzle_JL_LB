@@ -14,11 +14,11 @@ El jugador ordena las piezas deslizándolas hacia el espacio vacío antes de que
 | --- | --- | --- |
 | Juego | Tablero 3x3, 4x4 o 5x5 siempre resoluble, contador de movimientos, cronómetro y tiempo restante, pausa, reinicio y controles con las flechas del teclado. | Disponible |
 | Fin de partida | Victoria o derrota con tiempo, movimientos y dificultad; reiniciar o volver al menú. | Disponible |
-| Inicio | Pantalla de carga animada con opción de saltarla. | En desarrollo |
-| Menú principal | Jugar, Marcadores, Configuración y Cómo jugar. | En desarrollo |
+| Inicio | Pantalla de carga animada con opción de saltarla. | Disponible |
+| Menú principal | Botones animados; Jugar pide la dificultad antes de empezar. | Disponible |
 | Marcadores | Mejor tiempo y menor número de movimientos por dificultad, con fecha. | En desarrollo |
 | Configuración | Dificultad, tema claro / oscuro / automático, estilo de piezas, animaciones y sonido. | En desarrollo |
-| Cómo jugar | Reglas, cómo se gana y cómo se pierde. | En desarrollo |
+| Cómo jugar | Reglas, cómo mover, cómo se gana y cómo se pierde (tiempos por dificultad). | Disponible |
 
 ### Dificultades
 
@@ -52,7 +52,7 @@ Si el barajado sale sin solución, se intercambian dos piezas, lo que cambia la 
 lib/
 ├── logic/      Reglas del juego sin interfaz: tablero, partida, dificultad y récords
 ├── screens/    Pantallas de la app
-└── widgets/    Componentes reutilizables (tablero y piezas)
+└── widgets/    Componentes reutilizables (tablero, piezas, botones del menú y logo)
 test/           Pruebas de la lógica y de la pantalla de juego
 tool/           Scripts de la PWA (service worker y verificación)
 web/            index.html, manifiesto, íconos y service worker
