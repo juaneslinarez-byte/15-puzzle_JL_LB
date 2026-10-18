@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../logic/difficulty.dart';
 import '../logic/puzzle.dart';
+import '../state/app_scope.dart';
 import '../widgets/puzzle_board.dart';
 
 /// Reglas del juego. Su contenido no cambia, por eso es un StatelessWidget.
@@ -42,7 +43,14 @@ class InstructionsScreen extends StatelessWidget {
                     'y de arriba hacia abajo, con el espacio vacío al final. Un punto pequeño '
                     'en la esquina de una pieza indica que ya está en su lugar.',
                 extra: Center(
-                  child: SizedBox(width: 150, child: PuzzleBoard(puzzle: Puzzle.solved(3), animate: false)),
+                  child: SizedBox(
+                    width: 150,
+                    child: PuzzleBoard(
+                      puzzle: Puzzle.solved(3),
+                      style: AppScope.of(context).settings.tileStyle,
+                      animate: false,
+                    ),
+                  ),
                 ),
               ),
               _Block(

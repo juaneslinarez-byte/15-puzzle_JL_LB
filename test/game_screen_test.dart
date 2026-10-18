@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:puzzle15/data/app_storage.dart';
 import 'package:puzzle15/logic/difficulty.dart';
 import 'package:puzzle15/logic/game_session.dart';
 import 'package:puzzle15/logic/puzzle.dart';
 import 'package:puzzle15/screens/game_screen.dart';
+import 'package:puzzle15/state/app_scope.dart';
+import 'package:puzzle15/state/settings_controller.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   Future<void> pumpAlmostSolved(WidgetTester tester) async {
@@ -12,9 +16,14 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     final session = GameSession.withPuzzle(Difficulty.easy, Puzzle.fromTiles(3, [1, 2, 3, 4, 5, 6, 7, 0, 8]));
+    SharedPreferences.setMockInitialValues({});
+    final settings = SettingsController(AppStorage(await SharedPreferences.getInstance()));
     await tester.pumpWidget(
-      MaterialApp(
-        home: GameScreen(difficulty: Difficulty.easy, initialSession: session),
+      AppScope(
+        settings: settings,
+        child: MaterialApp(
+          home: GameScreen(difficulty: Difficulty.easy, initialSession: session),
+        ),
       ),
     );
   }
